@@ -2,40 +2,13 @@ import random
 from time import clock, time
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from matplotlib.path import Path
 from matplotlib.collections import PatchCollection
-
-colors = ['aqua', 'black', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon', 'navy', 'olive', 'purple', 'red', 'silver', 'teal', 'white', 'yellow']
-colorKey = {}
-colorCount = 0
-
-def getColor(branch):
-    global colors
-    global colorKey
-    global colorCount
-    try:
-        return colorKey[branch]
-    except KeyError:
-        idx = colorCount % len(colors)
-        color = colors[idx]
-        colorCount = colorCount + 1
-        colorKey[branch] = color
-        return color
-
-def genData():
-    BRANCHES = ['A','B','C','D','E']
-    vals = []
-    for mb in range(100):
-        i = 0
-        while i < 1000:
-            gap = random.randint(10,100)
-            idx = random.randint(0,4)
-            branch = BRANCHES[idx]
-            val = (mb, i, i+gap, branch)
-            vals.append(val)
-            i = i+gap
-    return vals
+from matplotlib.collections import PathCollection
 
 def transformByteToMB(data):
+    '''transform the data that is obtained parsing the root file into the
+        data that can be plotted using the two methods in this class'''
     scale = pow(2,20)
     newData = []
     for i in data:
@@ -56,55 +29,161 @@ def transformByteToMB(data):
     return newData
 
 def plotFileLayout(data, display, outName):
-    '''plot the file layout data given a a list of MB'''
+    '''plot the file layout data given a a list of MB transformed by the method
+        in this file'''
+    #Keep track of colors
+    colors = ['aqua', 'black', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon', 'navy', 'olive', 'purple', 'red', 'silver', 'teal', 'white', 'yellow']
+    colorIdx = 0
+    color = colors[colorIdx]
     #keep track of maximum x and y for bounds
     maxy = 0
     maxx = 10
     height = 1024
-
+    curBranch = ''
     start = time()
     #Plot the data
+    branchPaths = []
+    #movment same every time
+    codes =[Path.MOVETO,
+         Path.LINETO,
+         Path.LINETO,
+         Path.LINETO,
+         Path.CLOSEPOLY,
+         ] 
+    ax = plt.gca()
     for point in data:
-        #Bottom y cornder is the height in mb
+        #get the color if it is a differnet branch add it to the collection
+        if point[3] != curBranch:
+            if len(branchPaths) != 0:
+                ax.add_collection(PathCollection(branchPaths,facecolor=color,edgecolor=color, linewidth=.01))
+                branchPaths = []
+                color = colors[colorIdx % len(colors)]
+                colorIdx = colorIdx + 1
+                curBranch = point[3]
+        #get x and y
         y = point[0] * height
+        x = point[1]
+        w = point[2] - point[1]
+        verts = [ (x,y), 
+            (x,y+height),
+            (x+w,y+height), 
+            (x+w,y), 
+            (x,y),
+            ]
+        branchPaths.append(Path(verts, codes))
+        
+        #update maximums
         if maxy < y + height:
             maxy = y+height
-        #x is the offset
-        x = point[1]
-        xy = x,y
-        w = point[2] - point[1]
         if (x+w) > maxx:
             maxx = (x+w)
-        #get the color
-        color = getColor(point[3])
-        p = mpatches.Rectangle(xy,w,height,facecolor=color, edgecolor=color)
-        plt.gca().add_patch(p)
+
+    ax.add_collection(PathCollection(branchPaths,facecolor=color,edgecolor=color))
+    end = time()
+    print "Adding Rect Time %f"%(end-start)
+    plt.xlim((0,maxx))
+    plt.ylim((0,maxy))
+    
+    #set up axis tics etc
+    plt.xlabel('Offset within Mb (kb)')
+    plt.ylabel('Mb Offset in File')
+    plt.title('File Layout Graph')
+
+    
+
+    start = time()
+    #fix the labels
+    plt.draw()
+    end = time()
+    loc, labels = plt.yticks()
+    loc[-1] = maxy
+    newloc = ['%.1f'%(i/1024) for i in loc]
+    plt.yticks(loc, newloc) 
+    
+    locs = [x for x in range(0,pow(2,20),209715)]
+    labs = [str(x/1024) for x in locs]
+    plt.xticks(locs,labs)
+    print "Render Chart %f"%(end-start)
+    print "Number of colors %f"%colorIdx
+    #display or save it
+    if(display):
+        plt.show()
+    else:
+        start = time()
+        plt.savefig(outName)
+        end = time()
+        print "Saving %f"%(end-start)
+
+def plotFileLayoutOneColor(data, display, outName):
+    '''plot the file layout data given a a list of MB'''
+    '''only one branch color when it has been filtered'''
+    color = 'black'
+    #keep track of maximum x and y for bounds
+    maxy = 0
+    maxx = 10
+    height = 1024
+    start = time()
+    #Plot the data
+    branchPaths = []
+    #movment same every time
+    codes =[Path.MOVETO,
+         Path.LINETO,
+         Path.LINETO,
+         Path.LINETO,
+         Path.CLOSEPOLY,
+         ] 
+    ax = plt.gca()
+    for point in data:
+        #get x and y
+        y = point[0] * height
+        x = point[1]
+        w = point[2] - point[1]
+        verts = [ (x,y), 
+            (x,y+height),
+            (x+w,y+height), 
+            (x+w,y), 
+            (x,y),
+            ]
+        branchPaths.append(Path(verts, codes))
+        
+        #update maximums
+        if maxy < y + height:
+            maxy = y+height
+        if (x+w) > maxx:
+            maxx = (x+w)
+
+    ax.add_collection(PathCollection(branchPaths,facecolor=color,edgecolor=color))
     end = time()
     print "Adding Rect Time %f"%(end-start)
     plt.xlim((0,maxx))
     plt.ylim((0,maxy))
 
     
-    xtic= [x for x in range(maxx) if x % 1024==0]
-    #print(xtic)
-    ytic= [y for y in range(maxy) if (y % pow(2,20)) ==0]
-    xlab = [str(i/1024) for i in xtic]
-    ylab = [str(i/(pow(2,20))) for i in ytic]
-    
     #set up axis tics etc
-    plt.xlabel('Offset in Mb')
-    plt.ylabel('Mb in File')
-    plt.xticks(xtic,xlab)
-    plt.yticks(ytic,ylab)
-
+    plt.xlabel('Offset within Mb (kb)')
+    plt.ylabel('Mb offset in File')
+    plt.title('File Layout Graph')
     
 
     start = time()
     plt.draw()
     end = time()
-
     print "Render Chart %f"%(end-start)
+
+    #fix the labels
+    plt.draw()
+    end = time()
+    loc, labels = plt.yticks()
+    print loc
+    loc[-1] = maxy
+    print loc 
+    newloc = ['%.1f'%(i/1024) for i in loc]
+    plt.yticks(loc, newloc) 
     
+    locs = [x for x in range(0,pow(2,20),209715)]
+    labs = [str(x/1024) for x in locs]
+    plt.xticks(locs,labs)
+
     if(display):
         plt.show()
     else:

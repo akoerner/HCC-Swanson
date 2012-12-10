@@ -1,17 +1,20 @@
 from ROOT import *
-from HCCPlot import *
-
 
 #Recursivly get the sub branches
-def getSubBranches(branches):
+def getSubBranches(branches, branchRegex=None):
+    '''This subroutine will recursivly gather all of the branches that are
+        children of the list of branches passed into it.  Also optional
+        is the ability to filter the branches by a python regular expression'''
     if len(branches) == 0:
         return []
     else:
         vals =  []
+        if branchRegex != None:
+            branches = [branch for branch in branches if branchRegex.match(branch.GetName())]
         for b in branches:
             vals.append(b)
             subBranches = b.GetListOfBranches()
-            retVal = getSubBranches(subBranches)
+            retVal = getSubBranches(subBranches, branchRegex)
             for i in retVal:
                 vals.append(i)
         return vals
@@ -19,12 +22,16 @@ def getSubBranches(branches):
 
 
 
-def parseFile(fName, tName):
+def parseFile(fName, tName, branchRegex=None):
+    '''Parse the passed in file for all of buckets contained in the given tree
+        Also available is the filtering of the branches by a regular expression'''
     rootfile = TFile.Open(fName)
     tree = rootfile.Get(tName)
+    #get branches
     branches = tree.GetListOfBranches()
-    a = getSubBranches(branches)
+    a = getSubBranches(branches, branchRegex)
     buckets = []
+    #gather layout information
     for i in a:
         idx = 0
         basket = i.GetBasket(idx)
@@ -36,15 +43,18 @@ def parseFile(fName, tName):
             buckets.append(t)
             idx = idx + 1
             basket = i.GetBasket(idx)
-    sortBucket = sorted(buckets, key=lambda tup: tup[0])
+    sortBucket = sorted(buckets, key=lambda tup: tup[3])
     return sortBucket
 
 def listFileTrees(file):
+    '''Get the list of trees in a file'''
     rootfile = TFile.Open(file)
+    print '\n\nThe following trees are in the file: '
     for i in rootfile.GetListOfKeys():
         print i.GetName()
 
 def main():
+    '''main routine used for testing.....not needed anymore'''
     data = parseFile('eventdata.root', 'EventTree')
     transformedData = transformByteToMB(data)
     plotFileLayout(transformedData, true, 'out.png')
