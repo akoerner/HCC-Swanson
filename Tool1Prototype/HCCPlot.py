@@ -95,10 +95,19 @@ def plotFileLayout(data, display, outName):
     #fix the labels
     plt.draw()
     end = time()
-    loc, labels = plt.yticks()
-    loc[-1] = maxy
-    newloc = ['%.1f'%(i/1024) for i in loc]
-    plt.yticks(loc, newloc) 
+
+
+    #loc, labels = plt.yticks()
+    #loc[-1] = maxy
+    #newloc = ['%.1f'%(i/1024) for i in loc]
+    #plt.yticks(loc, newloc) 
+
+    spacing = int(maxy/10)
+    locs = [y for y in range(0, maxy,spacing)]
+	
+    labs = [str(y/1024) for y in locs]
+    plt.yticks(locs,labs)
+
     
     locs = [x for x in range(0,pow(2,20),209715)]
     labs = [str(x/1024) for x in locs]
@@ -173,12 +182,15 @@ def plotFileLayoutOneColor(data, display, outName):
     #fix the labels
     plt.draw()
     end = time()
-    loc, labels = plt.yticks()
-    print loc
-    loc[-1] = maxy
-    print loc 
-    newloc = ['%.1f'%(i/1024) for i in loc]
-    plt.yticks(loc, newloc) 
+
+    spacing = int(maxy/10)
+    locs = [y for y in range(0, maxy,spacing)]
+    labs = [str(y/1024) for y in locs]
+    if len(locs) != 11:
+        locs.append(maxy)
+        labs.append(str(maxy/1024))
+
+    plt.yticks(locs,labs)
     
     locs = [x for x in range(0,pow(2,20),209715)]
     labs = [str(x/1024) for x in locs]
