@@ -20,6 +20,7 @@ import matplotlib.patches as mpatches
 from optparse import OptionParser
 from time import time
 import HCCPlot, HCCRootParser
+import operator
 
 def getName(file):
     '''Get the default name for the output file in all cases it will be
@@ -33,8 +34,10 @@ def main():
     parser = OptionParser()
     parser.add_option('--file', '-f', help='ROOT file to graph',dest='file')
     parser.add_option('--tree', '-t', help='Tree to parse', dest='treeName')
+    parser.add_option('--firstN', '-N', help='Include only the first N branches on the graph', dest='maxBranch')
     parser.add_option('--display', '-d', dest='display', action='store_true' ,help='Show interactive matplotlib display')
     parser.add_option('--output_file','-o', dest = 'output', help='The name of the output file')
+    parser.add_option('--top_ten','-n', dest = 'topTen', action='store_true', help='Color Only the top ten branches in the file')
     parser.add_option('--list_trees', '-l', dest='list', action='store_true', help='List the available trees in file')
     parser.add_option('--branch_regex', '-r', dest='branchRegex', help='Regular expression to filter out branches')
     (options,  args)= parser.parse_args()
@@ -51,11 +54,16 @@ def main():
         HCCRootParser.listFileTrees(options.file)
         exit(0)
 
+
     #require the file name and tree
     if options.treeName is None:
         print "Tree Name is required"
         parser.print_help()
         exit(-1)
+
+    numOfBranches = None
+    if options.maxBranch:
+        numOfBranches = int(options.maxBranch)
 
     
     #output file name 
@@ -68,6 +76,12 @@ def main():
         display = True
     else:
         display = False
+    
+    #color only top ten files
+    if options.topTen:
+        topTen = True
+    else:
+        topTen = False
 
     #regular expression
     if options.branchRegex != None:
@@ -79,6 +93,14 @@ def main():
     firstS = time()
     s = time()
     data = HCCRootParser.parseFile(options.file, options.treeName, brex) 
+    if(topTen):
+        tenBig= getTenBig(data)
+    else:   
+        tenBig = None
+
+    if (numOfBranches != None):
+       data =  truncateData(data, numOfBranches)
+
     e = time()
     print "Parse time %d"%(e-s)
     #no need to make graph if blank data
@@ -95,9 +117,31 @@ def main():
     if brex != None:
         HCCPlot.plotFileLayoutOneColor(data, display, outName)
     else:   
-        HCCPlot.plotFileLayout(data, display, outName)
+        HCCPlot.plotFileLayout(data, display, outName, tenBig)
     fEnd = time()
     print "Total time %d"%(fEnd-firstS)
+
+def getTenBig(data):
+    dict = {}
+    for i in data:
+        name = i[3]
+        size = i[1]
+        if name in dict:
+            dict[name] = dict[name] + size
+        else:
+            dict[name] = size
+    sortedDict = sorted(dict.iteritems(), key=operator.itemgetter(1))
+    ans = sortedDict[-10:]
+    for i in ans:
+        print i
+    ans = [i[0] for i in ans]
+    return ans
+
+def truncateData(data, num):
+    sortedData = sorted(data, key=lambda tup: tup[0])
+    sortedData = sortedData[:num]
+    sortedData = sorted(sortedData, key=lambda tup: tup[3])
+    return sortedData
 
 if __name__ == '__main__':
     main()

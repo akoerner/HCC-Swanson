@@ -41,13 +41,17 @@ def transformByteToMB(data):
 
     return newData
 
-def plotFileLayout(data, display, outName):
+def plotFileLayout(data, display, outName, tenBig):
     '''plot the file layout data given a a list of MB transformed by the method
         in this file'''
     #Keep track of colors
-    colors = ['aqua', 'black', 'blue', 'fuchsia', 'gray', 'green', 'lime', 'maroon', 'navy', 'olive', 'purple', 'red', 'silver', 'teal', 'white', 'yellow']
+    colors = ['blue', 'darkgreen', 'darkgoldenrod', 'cyan', 'darkorange', 'darkmagenta', 'darkorchid', 'deeppink', 'greenyellow', 'red']
     colorIdx = 0
     color = colors[colorIdx]
+
+    if tenBig != None:  
+        colorMap = {}
+
     #keep track of maximum x and y for bounds
     maxy = 0
     maxx = 10
@@ -68,11 +72,24 @@ def plotFileLayout(data, display, outName):
         #get the color if it is a differnet branch add it to the collection
         if point[3] != curBranch:
             if len(branchPaths) != 0:
-                ax.add_collection(PathCollection(branchPaths,facecolor=color,edgecolor=color, linewidth=.01))
-                branchPaths = []
-                color = colors[colorIdx % len(colors)]
-                colorIdx = colorIdx + 1
+                if tenBig != None:
+                    if curBranch in colorMap:
+                        color = colorMap[curBranch]
+                    else:
+                        if curBranch in tenBig:
+                            color = colors[colorIdx % len(colors)]
+                            colorMap[curBranch] = color 
+                            colorIdx = colorIdx + 1
+                            print curBranch, colorMap[curBranch]
+                        else:
+                            color = 'black' 
+                else:
+                    color = colors[colorIdx % len(colors)]
+                    colorIdx = colorIdx + 1
                 curBranch = point[3]
+                ax.add_collection(PathCollection(branchPaths,facecolor=color,edgecolor=color, linewidth=.0))
+                branchPaths = []
+                #take care of color map stuff
         #get x and y
         y = point[0] * height
         x = point[1]
