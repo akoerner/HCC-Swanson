@@ -71,6 +71,7 @@ def main():
         outName = options.output
     else:
         outName = getName(options.file)
+
     #interactive display
     if options.display:
         display = True
@@ -90,9 +91,8 @@ def main():
         brex = None
     print brex
     #get data
-    firstS = time()
-    s = time()
     data = HCCRootParser.parseFile(options.file, options.treeName, brex) 
+
     if(topTen):
         tenBig= getTenBig(data)
     else:   
@@ -101,25 +101,20 @@ def main():
     if (numOfBranches != None):
        data =  truncateData(data, numOfBranches)
 
-    e = time()
-    print "Parse time %d"%(e-s)
     #no need to make graph if blank data
     if len(data) == 0:
         print 'No Branches in that tree'
         exit(0)
 
-    s = time()
     data = HCCPlot.transformByteToMB(data)
-    e = time()
-    print "Transform time %d"%(e-s)
-    print "Baskets found %d"%len(data)
+
     #plot
     if brex != None:
-        HCCPlot.plotFileLayoutOneColor(data, display, outName)
+        colorMap = None
     else:   
-        HCCPlot.plotFileLayout(data, display, outName, tenBig)
-    fEnd = time()
-    print "Total time %d"%(fEnd-firstS)
+        colorMap = createColorMap(data, False, tenBig)
+        HCCPlot.plotFileLayout(data, display, outName, colorMap, tenBig)
+
 
 def getTenBig(data):
     dict = {}
@@ -137,13 +132,33 @@ def getTenBig(data):
     ans = [i[0] for i in ans]
     return ans
 
+
 def truncateData(data, num):
     sortedData = sorted(data, key=lambda tup: tup[0])
     sortedData = sortedData[:num]
     sortedData = sorted(sortedData, key=lambda tup: tup[3])
     return sortedData
 
+
+def createColorMap(data, colorByBranchName, branchNames):
+    colors = ['blue', 'darkgreen', 'darkgoldenrod', 'cyan', 'darkorange', 'darkmagenta', 'yellow', 'deeppink', 'greenyellow', 'red']  
+    colorMap = {}
+    colorIdx = 0
+    if branchNames != None:
+        for point in data:
+            if point[3] in branchNames:
+                if point[3] not in colorMap: 
+                    print point[3]
+                    colorMap[point[3]] = colors[colorIdx % len(colors)]
+                    colorIdx = colorIdx + 1
+    else:
+        for point in data:
+            if point[3] not in colorMap: 
+                print point[3]
+                colorMap[point[3]] = colors[colorIdx % len(colors)]
+                colorIdx = colorIdx + 1
+    return colorMap
+                
+
 if __name__ == '__main__':
     main()
-
-
