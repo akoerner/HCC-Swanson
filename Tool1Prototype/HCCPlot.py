@@ -15,6 +15,7 @@ import random
 from time import clock, time
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from  matplotlib.font_manager import FontProperties
 from matplotlib.path import Path
 from matplotlib.collections import PatchCollection
 from matplotlib.collections import PathCollection
@@ -45,12 +46,14 @@ def plotFileLayout(data, display, outName, tenBig):
     '''plot the file layout data given a a list of MB transformed by the method
         in this file'''
     #Keep track of colors
-    colors = ['blue', 'darkgreen', 'darkgoldenrod', 'cyan', 'darkorange', 'darkmagenta', 'darkorchid', 'deeppink', 'greenyellow', 'red']
+    colors = ['blue', 'darkgreen', 'darkgoldenrod', 'cyan', 'darkorange', 'darkmagenta', 'yellow', 'deeppink', 'greenyellow', 'red']
     colorIdx = 0
     color = colors[colorIdx]
 
     if tenBig != None:  
         colorMap = {}
+    arts = []
+    labels = []
 
     #keep track of maximum x and y for bounds
     maxy = 0
@@ -86,6 +89,10 @@ def plotFileLayout(data, display, outName, tenBig):
                 else:
                     color = colors[colorIdx % len(colors)]
                     colorIdx = colorIdx + 1
+                path = PathCollection(branchPaths,facecolor=color,edgecolor=color)
+                if tenBig != None and curBranch in tenBig:
+                    arts.append(mpatches.Rectangle((0,0),1,1,fc=color))
+                    labels.append(curBranch)
                 curBranch = point[3]
                 ax.add_collection(PathCollection(branchPaths,facecolor=color,edgecolor=color, linewidth=.0))
                 branchPaths = []
@@ -107,8 +114,8 @@ def plotFileLayout(data, display, outName, tenBig):
             maxy = y+height
         if (x+w) > maxx:
             maxx = (x+w)
-
-    ax.add_collection(PathCollection(branchPaths,facecolor=color,edgecolor=color))
+    path = PathCollection(branchPaths,facecolor=color,edgecolor=color)
+    ax.add_collection(path)
     end = time()
     print "Adding Rect Time %f"%(end-start)
     plt.xlim((0,maxx))
@@ -152,6 +159,12 @@ def plotFileLayout(data, display, outName, tenBig):
         plt.savefig(outName)
         end = time()
         print "Saving %f"%(end-start)
+        if tenBig != None:
+            fp = FontProperties()
+            fp.set_size('small')
+            fig = plt.figure()
+            fig.legend(arts, labels, loc='upper left', mode='expand', prop = fp)
+            plt.savefig(outName[:-4] + '_legend' + '.png')
 
 def plotFileLayoutOneColor(data, display, outName):
     '''plot the file layout data given a a list of MB'''
