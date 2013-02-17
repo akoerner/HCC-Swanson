@@ -36,13 +36,13 @@ def getSubBranches(branches, branchRegex=None):
 
 
 
-def parseFile(fName, tName, branchRegex=None):
+def parseFile(fName, tName, branchRegex=None, byMother=False):
     '''Parse the passed in file for all of buckets contained in the given tree
         Also available is the filtering of the branches by a regular expression'''
     rootfile = TFile.Open(fName)
     tree = rootfile.Get(tName)
     #get branches
-    branches = tree.GetListOfBranches()
+    branches = tree.GetListOfBranches() 
     a = getSubBranches(branches, branchRegex)
     buckets = []
     #gather layout information
@@ -53,7 +53,10 @@ def parseFile(fName, tName, branchRegex=None):
             start = basket.GetSeekKey()
             length = basket.GetNbytes()
             end = start + length-1
-            t = (start, length, end, i.GetName())
+            if byMother:
+                t = (start, length, end, i.GetMother().GetName())
+            else:
+                t = (start, length, end, i.GetName())
             buckets.append(t)
             idx = idx + 1
             basket = i.GetBasket(idx)

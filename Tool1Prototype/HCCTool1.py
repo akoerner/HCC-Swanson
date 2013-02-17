@@ -15,6 +15,7 @@
 #   limitations under the License.
 import random
 import re
+from pylab import *
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from optparse import OptionParser
@@ -36,8 +37,9 @@ def main():
     parser.add_option('--tree', '-t', help='Tree to parse', dest='treeName')
     parser.add_option('--firstN', '-N', help='Include only the first N branches on the graph', dest='maxBranch')
     parser.add_option('--display', '-d', dest='display', action='store_true' ,help='Show interactive matplotlib display')
+    parser.add_option('--top_only', '-c', dest='topLevel', action='store_true' ,help='Color by only the top level branch')
     parser.add_option('--output_file','-o', dest = 'output', help='The name of the output file')
-    parser.add_option('--top_ten','-n', dest = 'topTen', action='store_true', help='Color Only the top ten branches in the file')
+    parser.add_option('--top_n','-n', dest = 'topN' , help='Color Only the top N branches in the file')
     parser.add_option('--list_trees', '-l', dest='list', action='store_true', help='List the available trees in file')
     parser.add_option('--branch_regex', '-r', dest='branchRegex', help='Regular expression to filter out branches')
     (options,  args)= parser.parse_args()
@@ -77,26 +79,30 @@ def main():
         display = True
     else:
         display = False
+
+    if options.topLevel:
+        topLevel = True
+    else:
+        topLevel  = False 
     
     #color only top ten files
-    if options.topTen:
-        topTen = True
-    else:
-        topTen = False
+    topN = None
+    if options.topN:
+        topN = options.topTen
+
+    if topN == None or topN > 30:
+        topN = 30 
 
     #regular expression
     if options.branchRegex != None:
         brex = re.compile(options.branchRegex)
     else:
         brex = None
-    print brex
-    #get data
-    data = HCCRootParser.parseFile(options.file, options.treeName, brex) 
 
-    if(topTen):
-        tenBig= getTenBig(data)
-    else:   
-        tenBig = None
+    #get data
+    data = HCCRootParser.parseFile(options.file, options.treeName, brex, topLevel) 
+
+    tenBig= getTenBig(data, topN)
 
     if (numOfBranches != None):
        data =  truncateData(data, numOfBranches)
@@ -110,13 +116,14 @@ def main():
 
     #plot
     if brex != None:
-        colorMap = None
+        colorMap = {} 
+        HCCPlot.plotFileLayout(data, display, outName, colorMap, tenBig)
     else:   
         colorMap = createColorMap(data, False, tenBig)
         HCCPlot.plotFileLayout(data, display, outName, colorMap, tenBig)
 
 
-def getTenBig(data):
+def getTenBig(data, num):
     dict = {}
     for i in data:
         name = i[3]
@@ -126,9 +133,7 @@ def getTenBig(data):
         else:
             dict[name] = size
     sortedDict = sorted(dict.iteritems(), key=operator.itemgetter(1))
-    ans = sortedDict[-10:]
-    for i in ans:
-        print i
+    ans = sortedDict[-num:]
     ans = [i[0] for i in ans]
     return ans
 
@@ -141,20 +146,29 @@ def truncateData(data, num):
 
 
 def createColorMap(data, colorByBranchName, branchNames):
-    colors = ['blue', 'darkgreen', 'darkgoldenrod', 'cyan', 'darkorange', 'darkmagenta', 'yellow', 'deeppink', 'greenyellow', 'red']  
+    if branchNames != None:
+        size = len(branchNames)
+    else:
+        size = len(data)
+    cm = get_cmap('gist_ncar')
+
+    #create colors
+    colors = []
+    for i in range(size):
+        color = cm(1. * i/size)
+        colors.append(color)
     colorMap = {}
     colorIdx = 0
+
     if branchNames != None:
         for point in data:
             if point[3] in branchNames:
                 if point[3] not in colorMap: 
-                    print point[3]
                     colorMap[point[3]] = colors[colorIdx % len(colors)]
                     colorIdx = colorIdx + 1
     else:
         for point in data:
             if point[3] not in colorMap: 
-                print point[3]
                 colorMap[point[3]] = colors[colorIdx % len(colors)]
                 colorIdx = colorIdx + 1
     return colorMap
