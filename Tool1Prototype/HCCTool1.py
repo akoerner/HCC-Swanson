@@ -40,6 +40,7 @@ def main():
     parser.add_option('--top_only', '-c', dest='topLevel', action='store_true' ,help='Color by only the top level branch')
     parser.add_option('--output_file','-o', dest = 'output', help='The name of the output file')
     parser.add_option('--top_n','-n', dest = 'topN' , help='Color Only the top N branches in the file')
+    parser.add_option('--eventFilter','-e' ,dest ='events', help='Plot only up to this event number or this range of events')
     parser.add_option('--list_trees', '-l', dest='list', action='store_true', help='List the available trees in file')
     parser.add_option('--branch_regex', '-r', dest='branchRegex', help='Regular expression to filter out branches')
     (options,  args)= parser.parse_args()
@@ -102,6 +103,9 @@ def main():
     #get data
     data = HCCRootParser.parseFile(options.file, options.treeName, brex, topLevel) 
 
+    if options.events:
+        data = filterByEvents(data, options.events)
+
     tenBig= getTenBig(data, topN)
 
     if (numOfBranches != None):
@@ -121,6 +125,36 @@ def main():
     else:   
         colorMap = createColorMap(data, False, tenBig)
         HCCPlot.plotFileLayout(data, display, outName, colorMap, tenBig)
+
+def filterByEvents(data, events):
+    arr = events.split('-')
+    if len(arr) == 1:
+        min = 0
+        max = int(arr[0])
+    else:
+        min = int(arr[0])
+        max = int(arr[1])
+    count = 0
+    idx1 = -1
+    idx2 = -1
+    sortedData = sorted(data, key=lambda tup: tup[0])
+    for i in range(len(sortedData)):
+        count = count + sortedData[i][4]
+        if idx1 < 0:
+            if count > min:
+                idx1 = i
+                print 'yo'
+        if idx2 < 0:
+            if count > max:
+                idx2 = i+1
+    print idx1, idx2 
+    if idx1 == -1:
+        idx1 = 0
+    if idx2 == -1:
+        idx2 = len(sortedData)
+    sortedData = sortedData[idx1:idx2]
+    sortedData = sorted(sortedData, key=lambda tup: tup[3])
+    return sortedData 
 
 
 def getTenBig(data, num):

@@ -50,7 +50,7 @@ def getColor(branch ,colorMap):
         return 'black'
 
 
-def plotFileLayout(data, display, outName, colorMap, legendBranches):
+def plotFileLayout(data, display, outName, colorMap, legendBranches,limits = None):
     '''plot the file layout data given a a list of MB transformed by the method
         in this file'''
 
@@ -122,8 +122,12 @@ def plotFileLayout(data, display, outName, colorMap, legendBranches):
     #add the collection to the graphic
     ax.add_collection(path)
 
-    plt.xlim((0,maxx))
-    plt.ylim((0,maxy))
+    if(limits == None):
+        plt.xlim((0,maxx))
+        plt.ylim((0,maxy))
+    else:
+        plt.xlim((0,maxx))
+        plt.ylim(limits)
     
     #set up axis tics etc
     plt.xlabel('Offset within Mb (kb)')

@@ -54,9 +54,9 @@ def parseFile(fName, tName, branchRegex=None, byMother=False):
             length = basket.GetNbytes()
             end = start + length-1
             if byMother:
-                t = (start, length, end, i.GetMother().GetName())
+                t = (start, length, end, i.GetMother().GetName(), basket.GetNevBuf())
             else:
-                t = (start, length, end, i.GetName())
+                t = (start, length, end, i.GetName(), basket.GetNevBuf())
             buckets.append(t)
             idx = idx + 1
             basket = i.GetBasket(idx)
