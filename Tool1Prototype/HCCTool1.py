@@ -96,12 +96,14 @@ def main():
     else:
         topLevel  = False 
     
-    #color only top ten files
     topN = None
+    #color only top ten files
     if options.topN:
-        topN = options.topTen
-
-    if topN == None or topN > 30:
+        
+        topN = int(options.topN)
+        if topN > 30:
+            topN = 30
+    else:
         topN = 30 
 
     #regular expression
