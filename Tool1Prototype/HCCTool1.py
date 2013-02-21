@@ -22,6 +22,7 @@ from optparse import OptionParser
 from time import time
 import HCCPlot, HCCRootParser
 import operator
+import os.path
 
 def getName(file):
     '''Get the default name for the output file in all cases it will be
@@ -33,14 +34,14 @@ def main():
     '''main options for program'''
     #command line options
     parser = OptionParser()
-    parser.add_option('--file', '-f', help='ROOT file to graph',dest='file')
+    parser.add_option('--file', '-f', help='ROOT input file',dest='file')
     parser.add_option('--tree', '-t', help='Tree to parse', dest='treeName')
-    parser.add_option('--firstN', '-N', help='Include only the first N branches on the graph', dest='maxBranch')
+    parser.add_option('--firstN', '-m', help='Display only the first N buckets of the file on the graph', dest='maxBranch')
     parser.add_option('--display', '-d', dest='display', action='store_true' ,help='Show interactive matplotlib display')
-    parser.add_option('--top_only', '-c', dest='topLevel', action='store_true' ,help='Color by only the top level branch')
+    parser.add_option('--top_level', '-b', dest='topLevel', action='store_true' ,help='Color by only the top level branch')
     parser.add_option('--output_file','-o', dest = 'output', help='The name of the output file')
-    parser.add_option('--top_n','-n', dest = 'topN' , help='Color Only the top N branches in the file')
-    parser.add_option('--eventFilter','-e' ,dest ='events', help='Plot only up to this event number or this range of events')
+    parser.add_option('--top_n','-n', dest = 'topN' , help='Color only the top N branches in the file')
+    parser.add_option('--eventFilter','-e' ,dest ='events', help='Plot only up to this event number or this range of events in the display')
     parser.add_option('--list_trees', '-l', dest='list', action='store_true', help='List the available trees in file')
     parser.add_option('--branch_regex', '-r', dest='branchRegex', help='Regular expression to filter out branches')
     (options,  args)= parser.parse_args()
@@ -51,6 +52,15 @@ def main():
         print "File root file is required"
         parser.print_help()
         exit(0)
+    if not options.file.upper().endswith('.ROOT'):
+        print 'Root file required'
+        exit()
+    try:
+        with open(options.file) as f: pass
+    except IOError as e:
+        print 'file does not exits'
+        exit()
+    
 
     #if list just list trees and exit
     if(options.list):
