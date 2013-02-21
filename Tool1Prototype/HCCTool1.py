@@ -139,7 +139,7 @@ def main():
         HCCPlot.plotFileLayout(data, display, outName, colorMap, tenBig)
 
 def filterByEvents(data, events):
-    arr = events.split('-')
+    arr = events.split(':')
     if len(arr) == 1:
         min = 0
         max = int(arr[0])
@@ -155,11 +155,9 @@ def filterByEvents(data, events):
         if idx1 < 0:
             if count > min:
                 idx1 = i
-                print 'yo'
         if idx2 < 0:
             if count > max:
                 idx2 = i+1
-    print idx1, idx2 
     if idx1 == -1:
         idx1 = 0
     if idx2 == -1:
