@@ -14,7 +14,7 @@ def rootUDPServer(dir, ip, port):
     command = "python root_udp_dump.py"
     files_in_dir = os.listdir(dir)
     for file_in_dir in files_in_dir:
-        if not os.path.isdir(file_in_dir)
+        if not os.path.isdir(file_in_dir):
             process = subprocess.Popen(command + " " + file_in_dir, shell=True, stdout=subprocess.PIPE)
             stdout, stderr = process.communicate()
             reader = csv.DictReader(stdout.decode('ascii').splitlines(), delimiter=' ', skipinitialspace=True, fieldnames=['site'])
