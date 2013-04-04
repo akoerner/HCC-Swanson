@@ -16,20 +16,13 @@ def main():
         tf.MakeProject("XrdFar", "*", "new++")
 
     for event in tf.XrdFar:
-        print event.F.mName
-        print  "\b "
-        print event.F.mOpenTime
-        print  "\b "
-        print event.F.mCloseTime
-        print  "\b "
-        print event.F.mRTotalMB
-        print  "\b "
-        print event.U.mFromHost
-        print  "\b "
-        print event.U.mFromDomain
-        print  "\b "
-        print event.S.mHost
-        print  "\b "
+        print event.F.mName,
+        print event.F.mOpenTime,
+        print event.F.mCloseTime,
+        print event.F.mRTotalMB,
+        print event.U.mFromHost,
+        print event.U.mFromDomain,
+        print event.S.mHost,
         print event.S.mDomain
      
 
