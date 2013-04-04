@@ -17,7 +17,7 @@ def rootUDPServer(dir, ip, port):
         if not os.path.isdir(file_in_dir):
             process = subprocess.Popen(command + " " + file_in_dir, shell=True, stdout=subprocess.PIPE)
             stdout, stderr = process.communicate()
-            reader = csv.DictReader(stdout.decode('ascii').splitlines(), delimiter=' ', skipinitialspace=True, fieldnames=["F.mOpenTime", "F.mCloseTime", "F.mRTotalMB", "U.mFromHost", "U.mFromDomain", "S.mHost", "S.mDomain"])
+            reader = csv.DictReader(stdout.decode('ascii').splitlines(), delimiter=' ', skipinitialspace=True, fieldnames=["mOpenTime", "mCloseTime", "mRTotalMB", "mFromHost", "mFromDomain", "mHost", "mDomain"])
             for row in reader:
                 time.sleep(1)
                 print(row)
