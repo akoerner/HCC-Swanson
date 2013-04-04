@@ -18,7 +18,7 @@ def rootUDPServer(dir, ip, port):
             process = subprocess.Popen(command + " " + file_in_dir, shell=True, stdout=subprocess.PIPE)
             stdout, stderr = process.communicate()
             reader = csv.DictReader(stdout.decode('ascii').splitlines(), delimiter=' ', skipinitialspace=False, fieldnames=["F.mOpenTime", "F.mCloseTime", "F.mRTotalMB", "U.mFromHost", "U.mFromDomain", "S.mHost", "S.mDomain"])
-            for row in reader:
+            for row in stdout.decode('ascii').splitlines():
                 time.sleep(1)
                 print(row)
 
