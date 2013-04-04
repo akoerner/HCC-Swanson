@@ -17,21 +17,20 @@ def main():
 
     for event in tf.XrdFar:
         print event.F.mName
-        print  " "
+        print  "\b "
         print event.F.mOpenTime
-        print  " "
+        print  "\b "
         print event.F.mCloseTime
-        print  " "
+        print  "\b "
         print event.F.mRTotalMB
-        print  " "
+        print  "\b "
         print event.U.mFromHost
-        print  " "
+        print  "\b "
         print event.U.mFromDomain
-        print  " "
+        print  "\b "
         print event.S.mHost
-        print  " "
+        print  "\b "
         print event.S.mDomain
-        print "\n"
      
 
                 
