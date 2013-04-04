@@ -11,6 +11,11 @@ import time
 
 def rootUDPServer(dir, ip, port):
 
+    UDP_IP = ip
+    UDP_PORT = int(port)
+    
+	sock = socket.socket(socket.AF_INET, # Internet
+                      socket.SOCK_DGRAM) # UDP
     command = "python root_udp_dump.py"
     files_in_dir = os.listdir(dir)
     for file_in_dir in files_in_dir:
@@ -20,7 +25,7 @@ def rootUDPServer(dir, ip, port):
             reader = csv.DictReader(stdout.decode('ascii').splitlines(), delimiter=' ', skipinitialspace=False, fieldnames=["F.mOpenTime", "F.mCloseTime", "F.mRTotalMB", "U.mFromHost", "U.mFromDomain", "S.mHost", "S.mDomain"])
             for row in stdout.decode('ascii').splitlines():
                 time.sleep(1)
-                print(row)
+                sock.sendto(row, (UDP_IP, UDP_PORT))
 
 class Usage(Exception):
     def __init__(self, msg):
@@ -55,17 +60,3 @@ if __name__ == "__main__":
 
 
  
-UDP_IP = "127.0.0.1"
-UDP_PORT = 5005
-MESSAGE = "Hello, World!"
-
-#setup
-sock = socket.socket(socket.AF_INET, # Internet
-                      socket.SOCK_DGRAM) # UDP
-					  
-					  
-					  
-					  
-					  
-##blast data					  
-sock.sendto(MESSAGE, (UDP_IP, UDP_PORT))
