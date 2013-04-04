@@ -11,7 +11,7 @@ import time
 
 def rootUDPServer(dir, ip, port):
 
-command = "python root_udp_dump.py"
+    command = "python root_udp_dump.py"
     files_in_dir = os.listdir(dir)
     for file_in_dir in files_in_dir:
         if !os.path.isdir(file_in_dir)
