@@ -11,31 +11,16 @@ import time
 
 def rootUDPServer(dir, ip, port):
 
-
+command = "python root_udp_dump.py"
     files_in_dir = os.listdir(dir)
     for file_in_dir in files_in_dir:
-         print file_in_dir
-
-
-    command = "python rootUdpDump.py"
-
-   
-    process = subprocess.Popen(command + " xmudp-2012-06-24-0.root", shell=True, stdout=subprocess.PIPE)
-   
-    syms = ['\\', '|', '/', '-']
-    bs = '\b'
-    print "Working...\\",
-    while process.poll() is None:
-        for sym in syms:
-            sys.stdout.write("\b%s" % sym)
-            sys.stdout.flush()
-            time.sleep(.1)
-    stdout, stderr = process.communicate()
-    reader = csv.DictReader(stdout.decode('ascii').splitlines(), delimiter=' ', skipinitialspace=True, fieldnames=['site'])
-
-    for row in reader:
-       print(row)
-    return reader
+        if !os.path.isdir(file_in_dir)
+            process = subprocess.Popen(command + " " + file_in_dir, shell=True, stdout=subprocess.PIPE)
+            stdout, stderr = process.communicate()
+            reader = csv.DictReader(stdout.decode('ascii').splitlines(), delimiter=' ', skipinitialspace=True, fieldnames=['site'])
+            for row in reader:
+                time.sleep(1)
+                print(row)
 
 class Usage(Exception):
     def __init__(self, msg):
