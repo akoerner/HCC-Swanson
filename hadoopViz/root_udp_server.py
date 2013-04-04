@@ -14,7 +14,7 @@ def rootUDPServer(dir, ip, port):
     UDP_IP = ip
     UDP_PORT = int(port)
     
-	sock = socket.socket(socket.AF_INET, # Internet
+    sock = socket.socket(socket.AF_INET, # Internet
                       socket.SOCK_DGRAM) # UDP
     command = "python root_udp_dump.py"
     files_in_dir = os.listdir(dir)
