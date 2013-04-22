@@ -121,9 +121,14 @@ class SysLogServ(object):
         ssh_match = self.sshregex.match(data)
 
         print data
-        new_data = data.split(' ')
-        self.SendToConnected(self.connlist, "globus", new_data[len(new_data) - 3], new_data[len(new_data)-1])
+        new_data = data.split('\n')
+        start = new_data[len(new_data) - 4].split('=')[1] +"/"+new_data[len(new_data) - 3].split('=')[1]
+        end = new_data[len(new_data) - 8].split('=')[1] +"/"+new_data[len(new_data) - 7].split('=')[1]
+        
 
+       
+        #self.SendToConnected(self.connlist, "globus", new_data[len(new_data) - 3], new_data[len(new_data)-1])
+        self.SendToConnected(self.connlist, "packet", start, end)
 
 
         if ssh_match:

@@ -2,7 +2,7 @@ import socket
 
 UDPSock = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
 
-listen_addr = ("",12345)
+listen_addr = ("",9345)
 UDPSock.bind(listen_addr)
 
 
