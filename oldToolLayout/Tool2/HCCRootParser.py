@@ -13,6 +13,7 @@
 #   limitations under the License.
 
 from ROOT import *
+from time import time
 
 #Recursivly get the sub branches
 def getSubBranches(branches, branchRegex=None):
@@ -36,32 +37,51 @@ def getSubBranches(branches, branchRegex=None):
 
 
 
-def parseFile(fName, tName, branchRegex=None, byMother=False):
+def parseFileTool2(fName, tName, branchRegex=None, byMother=False, topN = 30, filterByTop = False):
     '''Parse the passed in file for all of buckets contained in the given tree
         Also available is the filtering of the branches by a regular expression'''
+    gROOT.ProcessLine("gErrorIgnoreLevel = 2500;")
     rootfile = TFile.Open(fName)
     tree = rootfile.Get(tName)
     #get branches
     branches = tree.GetListOfBranches() 
-    a = getSubBranches(branches, branchRegex)
+    allBranches = getSubBranches(branches, branchRegex)
+    topBranches = filterTopBranches(allBranches, topN)
     buckets = []
     #gather layout information
-    for i in a:
+    for i in topBranches:
         idx = 0
         basket = i.GetBasket(idx)
+        mother = i.GetMother().GetName()
+        name = i.GetName()
         while basket != None:
             start = basket.GetSeekKey()
             length = basket.GetNbytes()
             end = start + length-1
             if byMother:
-                t = (start, length, end, i.GetMother().GetName(), basket.GetNevBuf())
+                t = (start, length, end, mother, basket.GetNevBuf())
             else:
-                t = (start, length, end, i.GetName(), basket.GetNevBuf())
+                t = (start, length, end, name, basket.GetNevBuf())
             buckets.append(t)
             idx = idx + 1
             basket = i.GetBasket(idx)
     sortBucket = sorted(buckets, key=lambda tup: tup[3])
     return sortBucket
+
+def filterTopBranches(allBranches, topN):
+    l1 = sorted(allBranches, key=totalSize, reverse=True)
+    return l1[:topN]
+
+
+def totalSize(branch):
+    return branch.GetTotalSize()
+
+def totBytes(branch):
+    return branch.GetTotBytes()
+    
+def zippedBytes(branch):
+    return branch.GetZipBytes()
+    
 
 def listFileTrees(file):
     '''Get the list of trees in a file'''

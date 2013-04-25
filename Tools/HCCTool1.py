@@ -112,6 +112,7 @@ def main():
     else:
         brex = None
 
+    print 'parsing data'
     #get data
     data = HCCRootParser.parseFile(options.file, options.treeName, brex, topLevel) 
 
@@ -130,6 +131,7 @@ def main():
 
     data = HCCPlot.transformByteToMB(data)
 
+    print 'plotting'
     #plot
     if brex != None:
         colorMap = {} 
