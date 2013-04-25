@@ -35,11 +35,24 @@ def transformByteToMB(data):
         name = i[3]
         basket = (mb,offset,end,name)
         #need to add for baskets that go off of the end and rescale
+            
         if end > scale:
+            temp = []
+            length = end
             basket = (mb,offset, scale,name)
-            carryover = (mb +1, 0,end - scale, name)
-            newData.append(basket)
-            newData.append(carryover)
+            temp.append(basket)
+            length = length - offset
+            while length > 0:
+                mb = mb+1
+                loc = 0
+                end = 0
+                if(length < scale):
+                    end = length
+                else:   
+                    end = scale
+                length = length - scale
+                temp.append([mb, loc,end, name])
+            newData += temp
         else:
            newData.append(basket)
 
@@ -141,12 +154,17 @@ def plotFileLayout(data, display, outName, colorMap, legendBranches,limits = Non
     plt.draw()
 
     #fix the y labels
-    spacing = int(maxy/10)
+    numTicks = maxy / 1024
+    if numTicks > 10:
+        numTicks = 10
+        
+
+    spacing = int((maxy)/numTicks)
+    
     locs = [y for y in range(0, maxy,spacing)]
 	
     labs = [str(y/1024) for y in locs]
     plt.yticks(locs,labs)
-
     locs = [256, 512, 789, 1024]
     locs = [x * 1024 for x in locs]
     labs = [str(x/1024) for x in locs]
@@ -355,7 +373,12 @@ def plotFileLayoutTool2(data, display, outName, colorMap, legendBranches,limits 
     plt.draw()
 
     #fix the y labels
-    spacing = int((maxy-starty)/10)
+    numTicks = maxy - starty
+    if numTicks > 10:
+        numTicks = 10
+        
+
+    spacing = int((maxy-starty)/numTicks)
     if(spacing > 0):
         locs = [y for y in xrange(starty, maxy,spacing)]
 	
